@@ -1,0 +1,1500 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset=utf8>
+  <meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>
+    :root {
+      color-scheme: light;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px)
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font: 14px -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fff;
+      color: #000
+    }
+
+    img {
+      max-width: 100%
+    }
+
+    [hidden]:not([hidden=until-found i]) {
+      display: none !important
+    }
+  </style>
+</head>
+
+<body>
+  <title>Marginalia</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=DM+Mono:wght@400;500&display=swap">
+  <style>
+    /* Layout: a shelf of animated book covers, then a two-column reader (sticky live scene + chapter list | page of text).
+   Each topic brings its own accent through --topic; the app chrome stays cool and neutral. */
+    :root {
+      --bg: #E8ECEF;
+      --surface: #F4F7F8;
+      --paper: #FBFCFC;
+      --fg: #11161C;
+      --muted: #505B66;
+      --line: #C8D0D7;
+      --accent: #0A6C97;
+      --accent-fg: #FFFFFF;
+      --font-display: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+      --font-body: 'Literata', Georgia, 'Times New Roman', serif;
+      --font-mono: 'DM Mono', ui-monospace, Menlo, Consolas, monospace;
+      --fs: 1.125;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0D1217;
+        --surface: #151C23;
+        --paper: #111920;
+        --fg: #E7ECF0;
+        --muted: #98A4AF;
+        --line: #27313A;
+        --accent: #6CC3EA;
+        --accent-fg: #06222F;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0D1217;
+      --surface: #151C23;
+      --paper: #111920;
+      --fg: #E7ECF0;
+      --muted: #98A4AF;
+      --line: #27313A;
+      --accent: #6CC3EA;
+      --accent-fg: #06222F;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-display);
+      font-size: 15px;
+      line-height: 1.5;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-block: 0 56px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0 0 auto;
+      height: env(safe-area-inset-top, 0px);
+      background: var(--bg);
+      z-index: 10
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto
+    }
+
+    a {
+      color: inherit
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px
+    }
+
+    .top {
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      z-index: 5;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-block: 14px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -.01em
+    }
+
+    .brand svg {
+      width: 26px;
+      height: 26px;
+      color: var(--accent)
+    }
+
+    .btn {
+      font: 600 .85rem/1 var(--font-display);
+      color: var(--fg);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px
+    }
+
+    .btn:hover {
+      border-color: var(--fg)
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent)
+    }
+
+    .eyebrow {
+      font: 500 .72rem/1.2 var(--font-mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0
+    }
+
+    /* Library */
+    .intro {
+      display: grid;
+      gap: 20px;
+      padding-block: 40px 8px
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(2.1rem, 5.6vw, 4rem);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+      text-wrap: balance;
+      max-width: 14ch
+    }
+
+    .lede {
+      margin: 0;
+      font: 400 1.05rem/1.6 var(--font-body);
+      color: var(--muted);
+      max-width: 46ch
+    }
+
+    @media (min-width:820px) {
+      .intro {
+        grid-template-columns: 1.3fr 1fr;
+        align-items: end;
+        gap: 48px
+      }
+    }
+
+    .shelf {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+      gap: 22px;
+      margin-top: 32px
+    }
+
+    .cover {
+      position: relative;
+      display: block;
+      aspect-ratio: 3/4;
+      max-width: 100%;
+      border-radius: 3px 12px 12px 3px;
+      overflow: hidden;
+      text-decoration: none;
+      color: #fff;
+      background: #050816;
+      isolation: isolate;
+      transition: transform .25s ease, box-shadow .25s ease
+    }
+
+    .cover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 30px -14px rgba(0, 0, 0, .5)
+    }
+
+    .cover canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 0
+    }
+
+    .cover::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: linear-gradient(90deg, rgba(0, 0, 0, .4), rgba(255, 255, 255, .14) 3.5%, rgba(0, 0, 0, .12) 5.5%, transparent 9%)
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(to top, rgba(3, 6, 14, .9) 0%, rgba(3, 6, 14, .55) 30%, transparent 56%)
+    }
+
+    .meta {
+      position: absolute;
+      z-index: 2;
+      left: 20px;
+      right: 14px;
+      bottom: 14px;
+      display: grid;
+      gap: 6px
+    }
+
+    .tag {
+      font: 500 .66rem/1 var(--font-mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255, 255, 255, .85)
+    }
+
+    .tag::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--topic)
+    }
+
+    .ctitle {
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.08;
+      letter-spacing: -.01em;
+      text-wrap: balance
+    }
+
+    .sub {
+      font: 400 .72rem/1.2 var(--font-mono);
+      color: rgba(255, 255, 255, .7)
+    }
+
+    .bar {
+      display: block;
+      height: 3px;
+      background: rgba(255, 255, 255, .25);
+      margin-top: 4px
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--topic)
+    }
+
+    .cover.add {
+      background: transparent;
+      border: 1.5px dashed var(--line);
+      color: var(--fg);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border-radius: 12px
+    }
+
+    .cover.add::after {
+      display: none
+    }
+
+    .cover.add:hover {
+      border-color: var(--accent);
+      box-shadow: none
+    }
+
+    .add-in {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+      padding: 16px
+    }
+
+    .add-in b {
+      font-size: 2rem;
+      line-height: 1;
+      font-weight: 400;
+      color: var(--accent)
+    }
+
+    .add-in span {
+      font-weight: 700;
+      font-size: 1.05rem
+    }
+
+    .add-in small {
+      font: 400 .72rem/1.3 var(--font-mono);
+      color: var(--muted)
+    }
+
+    /* Reader */
+    .reader-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-block: 18px
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .reader-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px
+    }
+
+    .scene {
+      margin: 0;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #050816;
+      aspect-ratio: 16/11;
+      max-width: 100%
+    }
+
+    .scene canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .cap {
+      font: 400 .74rem/1.45 var(--font-mono);
+      color: var(--muted);
+      margin: 10px 2px 0
+    }
+
+    .toc {
+      display: grid;
+      gap: 4px;
+      margin-top: 14px
+    }
+
+    .toc button {
+      font: inherit;
+      color: var(--fg);
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      text-align: left;
+      cursor: pointer;
+      min-height: 44px
+    }
+
+    .toc button:hover {
+      background: var(--surface)
+    }
+
+    .toc button[aria-current="true"] {
+      background: var(--surface);
+      font-weight: 700
+    }
+
+    .toc .n {
+      font: 500 .72rem/1 var(--font-mono);
+      color: var(--muted)
+    }
+
+    .toc .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1.5px solid var(--line)
+    }
+
+    .toc .dot.on {
+      background: var(--topic);
+      border-color: var(--topic)
+    }
+
+    .page {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 4px 14px 14px 4px;
+      padding: clamp(22px, 4.5vw, 52px)
+    }
+
+    .sheet {
+      max-width: 64ch;
+      animation: turn .45s cubic-bezier(.2, .7, .2, 1)
+    }
+
+    @keyframes turn {
+      from {
+        opacity: .3;
+        transform: translateX(var(--dx, 18px))
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .segs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 26px
+    }
+
+    .seg {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--line)
+    }
+
+    .seg.seen {
+      background: color-mix(in srgb, var(--topic) 45%, var(--line))
+    }
+
+    .seg.cur {
+      background: var(--topic)
+    }
+
+    .sheet h2 {
+      margin: 10px 0 22px;
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4.2vw, 2.7rem);
+      line-height: 1.05;
+      letter-spacing: -.025em;
+      text-wrap: balance
+    }
+
+    .sheet p {
+      font-family: var(--font-body);
+      font-size: calc(var(--fs)*1rem);
+      line-height: 1.72;
+      margin: 0 0 1.1em
+    }
+
+    .sheet p.eyebrow {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      line-height: 1.2;
+      margin: 0
+    }
+
+    .fact {
+      margin: 30px 0 0;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 6px
+    }
+
+    .fact dt {
+      font: 500 .72rem/1.2 var(--font-mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .fact dt::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--topic)
+    }
+
+    .fact dd {
+      margin: 0;
+      font-weight: 700;
+      font-size: clamp(1.3rem, 3vw, 1.7rem);
+      letter-spacing: -.01em;
+      line-height: 1.2
+    }
+
+    .pager {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 34px;
+      flex-wrap: wrap
+    }
+
+    .pager .btn {
+      display: grid;
+      gap: 4px;
+      padding: 12px 16px;
+      min-width: 0;
+      max-width: 100%;
+      flex: 1 1 180px
+    }
+
+    .pager .btn small {
+      font: 400 .68rem/1 var(--font-mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted)
+    }
+
+    .pager .btn span {
+      font-weight: 700;
+      line-height: 1.2
+    }
+
+    .pager .nx {
+      text-align: right
+    }
+
+    .pager .ph {
+      flex: 1 1 180px
+    }
+
+    @media (min-width:920px) {
+      .reader-grid {
+        grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+        gap: 48px;
+        align-items: start
+      }
+
+      .side {
+        position: sticky;
+        top: calc(env(safe-area-inset-top, 0px) + 76px)
+      }
+
+      .side .scene {
+        aspect-ratio: 1/1
+      }
+    }
+
+    /* Composer */
+    .compose {
+      max-width: 760px;
+      padding-block: 32px;
+      display: grid;
+      gap: 22px
+    }
+
+    .compose h1 {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(1.9rem, 4.5vw, 3rem);
+      letter-spacing: -.03em;
+      line-height: 1.05
+    }
+
+    .field {
+      display: grid;
+      gap: 8px
+    }
+
+    .field label,
+    .field legend {
+      font: 500 .72rem/1.2 var(--font-mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0
+    }
+
+    fieldset {
+      border: 0;
+      margin: 0;
+      padding: 0;
+      min-width: 0
+    }
+
+    input[type=text],
+    textarea {
+      font: inherit;
+      color: var(--fg);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      width: 100%;
+      min-width: 0
+    }
+
+    textarea {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 240px;
+      resize: vertical
+    }
+
+    .picker {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px
+    }
+
+    .opt {
+      position: relative;
+      display: block
+    }
+
+    .opt input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      margin: 0;
+      cursor: pointer
+    }
+
+    .opt span {
+      display: block;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      font-weight: 600;
+      font-size: .9rem
+    }
+
+    .opt input:checked+span {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent)
+    }
+
+    .opt input:focus-visible+span {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    .hint {
+      font: 400 .78rem/1.5 var(--font-mono);
+      color: var(--muted);
+      margin: 0
+    }
+
+    .err {
+      margin: 0;
+      color: #B3261E;
+      font-weight: 600
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .err {
+        color: #FF9B93
+      }
+    }
+
+    :root[data-theme="dark"] .err {
+      color: #FF9B93
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important
+      }
+    }
+  </style>
+
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="#" aria-label="Marginalia library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 5.5c3-1.2 6-1 9 .8 3-1.8 6-2 9-.8V19c-3-1.2-6-1-9 .8-3-1.8-6-2-9-.8z" />
+          <path d="M12 6.3v13.5" />
+        </svg>
+        Marginalia
+      </a>
+      <button class="btn" id="theme" type="button"></button>
+    </header>
+    <main id="view"></main>
+  </div>
+
+  <script>
+    "use strict";
+    /* ---------- helpers ---------- */
+    const $ = (s, r = document) => r.querySelector(s);
+    function h(tag, props, ...kids) {
+      const e = document.createElement(tag);
+      for (const [k, v] of Object.entries(props || {})) {
+        if (v == null || v === false) continue;
+        if (k === "class") e.className = v;
+        else if (k === "style") e.style.cssText = v;
+        else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+        else e.setAttribute(k, v === true ? "" : v);
+      }
+      for (const kid of kids.flat()) {
+        if (kid == null || kid === false) continue;
+        e.append(kid.nodeType ? kid : document.createTextNode(kid));
+      }
+      return e;
+    }
+    const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const tri = (c, i) => clamp(1 - Math.abs(c - i));
+    const sm = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+    function rng(seed) {
+      return () => {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    const hex = s => [1, 3, 5].map(i => parseInt(s.slice(i, i + 2), 16));
+    const mix = (a, b, t) => {
+      const A = hex(a), B = hex(b);
+      return "rgb(" + A.map((v, i) => Math.round(lerp(v, B[i], t))).join(",") + ")";
+    };
+    function ramp(stops, x) {
+      if (x <= stops[0][0]) return mix(stops[0][1], stops[0][1], 0);
+      for (let i = 1; i < stops.length; i++) {
+        if (x <= stops[i][0]) return mix(stops[i - 1][1], stops[i][1], (x - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]));
+      }
+      const l = stops[stops.length - 1][1];
+      return mix(l, l, 0);
+    }
+
+    /* ---------- scenes: one animation per topic ---------- */
+    const TAU = Math.PI * 2;
+    const MONO = '"DM Mono", ui-monospace, monospace';
+
+    const PLANETS = [
+      ["Mercury", .39, 2.2, "#b8b2a7"], ["Venus", .72, 3.6, "#e8c47c"], ["Earth", 1, 3.8, "#4aa8ff"], ["Mars", 1.52, 3.1, "#e2653e"],
+      ["Jupiter", 5.2, 7, "#d8b48a"], ["Saturn", 9.58, 6, "#ead6a6"], ["Uranus", 19.2, 4.6, "#8fe3e8"], ["Neptune", 30.1, 4.6, "#5f80ff"]
+    ];
+    function solar(S, ctx, w, h, t) {
+      const m = S.mem;
+      if (!m.st) {
+        const r = rng(11);
+        m.st = Array.from({ length: 90 }, () => ({ x: r(), y: r(), s: r() * 1.1 + .3, p: r() * TAU }));
+        m.ph = PLANETS.map((_, i) => rng(i * 17 + 3)() * TAU);
+      }
+      const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#050816"); g.addColorStop(1, "#0b1030");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      for (const s of m.st) { ctx.globalAlpha = .35 + .35 * Math.sin(t * 1.4 + s.p); ctx.fillRect(s.x * w, s.y * h, s.s, s.s); }
+      ctx.globalAlpha = 1;
+      const cx = w / 2, cy = h / 2, half = Math.min(w, h) * .46;
+      const V = [1.9, 11, 32], c = clamp(S.c, 0, 2), i = Math.min(1, Math.floor(c)), f = c - i;
+      const viewR = Math.exp(lerp(Math.log(V[i]), Math.log(V[i + 1]), f));
+      const ppa = half / viewR, speed = Math.pow(viewR / 1.9, .9);
+      const sr = 6 + 4 * tri(c, 0);
+      const sg = ctx.createRadialGradient(cx, cy, 0, cx, cy, sr * 4);
+      sg.addColorStop(0, "rgba(255,225,140,.95)"); sg.addColorStop(.25, "rgba(255,190,80,.5)"); sg.addColorStop(1, "rgba(255,160,40,0)");
+      ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(cx, cy, sr * 4, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#fff3c4"; ctx.beginPath(); ctx.arc(cx, cy, sr, 0, TAU); ctx.fill();
+      const unit = Math.max(.7, Math.min(w, h) / 320);
+      PLANETS.forEach(([name, a, size, col], k) => {
+        const r = a * ppa, al = clamp((r - 9) / 12) * clamp((half * 1.04 - r) / 10);
+        if (al <= .01) return;
+        ctx.globalAlpha = al;
+        ctx.strokeStyle = "rgba(255,255,255,.16)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
+        const ang = m.ph[k] + t * TAU / (12 * Math.pow(a, 1.5)) * speed;
+        const x = cx + Math.cos(ang) * r, y = cy + Math.sin(ang) * r, sz = size * unit;
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, sz, 0, TAU); ctx.fill();
+        if (name === "Saturn") { ctx.strokeStyle = "rgba(234,214,166,.85)"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse(x, y, sz * 2, sz * .7, -.4, 0, TAU); ctx.stroke(); }
+        if (w > 260) { ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.font = "10px " + MONO; ctx.fillText(name, x + sz + 5, y + 3); }
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function cloud(ctx, x, y, s, col) {
+      ctx.fillStyle = col;
+      for (const [dx, dy, r] of [[-1.2, .2, .7], [-.5, -.3, .9], [.3, -.4, 1], [1, .1, .8], [0, .3, 1], [-.6, .35, .8], [.7, .35, .8]]) {
+        ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, TAU); ctx.fill();
+      }
+    }
+    function water(S, ctx, w, h, t) {
+      const c = S.c, ev = tri(c, 0), co = tri(c, 1), ra = tri(c, 2), m = S.mem;
+      if (!m.v) {
+        const r = rng(5);
+        m.v = Array.from({ length: 46 }, () => ({ x: .3 + r() * .65, p: r(), s: .7 + r() * .6 }));
+        m.r = Array.from({ length: 110 }, () => ({ x: r(), p: r(), s: .8 + r() * .6 }));
+      }
+      const gray = clamp(co * .5 + ra * .9), seaY = h * .76;
+      const g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, mix("#4fa9e6", "#56687c", gray)); g.addColorStop(1, mix("#cdeaf8", "#a8b8c6", gray));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      // sun
+      const sx = w * .8, sy = h * .16, sr = Math.min(w, h) * .055;
+      ctx.save(); ctx.globalAlpha = 1 - ra * .85;
+      ctx.strokeStyle = "rgba(255,226,138,.8)"; ctx.lineWidth = 2;
+      for (let k = 0; k < 12; k++) {
+        const a = k * TAU / 12 + t * .15, r1 = sr * 1.4, r2 = sr * (1.8 + .6 * ev + .2 * Math.sin(t * 2 + k));
+        ctx.beginPath(); ctx.moveTo(sx + Math.cos(a) * r1, sy + Math.sin(a) * r1); ctx.lineTo(sx + Math.cos(a) * r2, sy + Math.sin(a) * r2); ctx.stroke();
+      }
+      ctx.fillStyle = "#ffe28a"; ctx.beginPath(); ctx.arc(sx, sy, sr, 0, TAU); ctx.fill(); ctx.restore();
+      // mountain
+      ctx.fillStyle = mix("#40634f", "#2f4a3d", gray);
+      ctx.beginPath(); ctx.moveTo(0, seaY); ctx.lineTo(0, h * .52); ctx.lineTo(w * .1, h * .4); ctx.lineTo(w * .18, h * .47); ctx.lineTo(w * .27, h * .36);
+      ctx.lineTo(w * .34, h * .5); ctx.lineTo(w * .46, seaY); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.beginPath(); ctx.moveTo(w * .27, h * .36); ctx.lineTo(w * .245, h * .405); ctx.lineTo(w * .26, h * .395); ctx.lineTo(w * .275, h * .41); ctx.lineTo(w * .295, h * .405); ctx.closePath(); ctx.fill();
+      // river
+      ctx.save(); ctx.globalAlpha = .25 + .75 * ra; ctx.strokeStyle = "#6bc0f0"; ctx.lineWidth = 2.5; ctx.setLineDash([6, 6]); ctx.lineDashOffset = -t * 18;
+      ctx.beginPath(); ctx.moveTo(w * .29, h * .45); ctx.quadraticCurveTo(w * .34, h * .64, w * .45, seaY); ctx.stroke(); ctx.restore();
+      // sea
+      const sg = ctx.createLinearGradient(0, seaY, 0, h); sg.addColorStop(0, "#1f78ae"); sg.addColorStop(1, "#0c3d66");
+      ctx.fillStyle = sg; ctx.fillRect(0, seaY, w, h - seaY);
+      ctx.lineWidth = 1.2;
+      for (let k = 0; k < 3; k++) {
+        ctx.strokeStyle = "rgba(255,255,255," + (.22 - k * .05) + ")"; ctx.beginPath();
+        for (let x = 0; x <= w; x += 6) { const y = seaY + 8 + k * 14 + Math.sin(x / 30 + t * 1.2 + k) * 3; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.stroke();
+      }
+      // vapor
+      for (const v of m.v) {
+        const p = (t * (.08 + .07 * ev) * v.s + v.p) % 1, x = w * v.x + Math.sin(t * 1.2 + v.p * 9) * 7, y = seaY - p * (seaY - h * .3);
+        ctx.fillStyle = "rgba(255,255,255," + (Math.sin(p * Math.PI) * (.18 + .6 * ev)).toFixed(3) + ")";
+        ctx.beginPath(); ctx.arc(x, y, 2.2, 0, TAU); ctx.fill();
+      }
+      // clouds
+      const cs = Math.min(w, h) * .06;
+      for (const b of [[.2, .19, 1], [.55, .12, 1.3], [.78, .27, .9]]) {
+        const x = (((b[0] + t * .01 * b[2]) % 1.3) - .15) * w;
+        cloud(ctx, x, h * b[1], cs * b[2] * (.7 + .5 * co + .35 * ra), mix("#ffffff", "#7e8d9c", ra));
+      }
+      // rain
+      const n = Math.floor(m.r.length * clamp(ra + .04 * co));
+      ctx.strokeStyle = "rgba(190,225,250,.85)"; ctx.lineWidth = 1.3;
+      for (let k = 0; k < n; k++) {
+        const d = m.r[k], p = (t * .9 * d.s + d.p) % 1, x = w * d.x, y = h * .28 + p * (seaY - h * .28);
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 2, y + 9); ctx.stroke();
+      }
+    }
+
+    function sound(S, ctx, w, h, t) {
+      const c = S.c, g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#120a2c"); g.addColorStop(1, "#1e1246"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      const rows = [h * .24, h * .5, h * .76], amp = h * .075, bOn = clamp(c * 1.2), sumOn = clamp(c - .8);
+      const kA = 2.2, kB = c <= 1 ? lerp(2.2, 5.4, sm(c)) : lerp(5.4, 2.7, sm(c - 1));
+      const loud = 1 + .55 * tri(c, 1) * Math.sin(t * 1.6), v = .45;
+      ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.lineWidth = 1;
+      for (const y of rows) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+      const A = u => amp * loud * Math.sin((u * kA - t * v) * TAU), B = u => amp * bOn * Math.sin((u * kB - t * v) * TAU);
+      function line(y, fn, col, lw, alpha) {
+        ctx.globalAlpha = alpha; ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.shadowColor = col; ctx.shadowBlur = 10; ctx.beginPath();
+        for (let x = 0; x <= w; x += 3) { const yy = y + fn(x / w); x ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy); }
+        ctx.stroke(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      }
+      line(rows[0], A, "#ff5fa2", 2.4, 1);
+      line(rows[1], B, "#6fd3ff", 2.4, .15 + .85 * bOn);
+      line(rows[2], u => (A(u) + B(u)) * .62, "#ffe08a", 2.4, .15 + .85 * sumOn);
+      ctx.font = "10px " + MONO; ctx.fillStyle = "rgba(255,255,255,.6)";
+      ["A", "B", "A + B"].forEach((s, i) => ctx.fillText(s, 12, rows[i] - amp * 1.6));
+      const u = (t * .15) % 1;
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(u * w, rows[0] + A(u), 4, 0, TAU); ctx.fill();
+    }
+
+    const OCEAN = [[0, "#3ab8d8"], [200, "#0f6f99"], [1000, "#06304f"], [4000, "#02050d"]];
+    function ocean(S, ctx, w, h, t) {
+      const m = S.mem;
+      if (!m.p) {
+        const r = rng(3);
+        m.p = Array.from({ length: 70 }, () => ({ x: r(), y: r(), s: .4 + r() * .9, z: r() }));
+        m.f = Array.from({ length: 7 }, () => ({ y: .15 + r() * .6, p: r(), s: .5 + r() * .8, z: .6 + r() * .8 }));
+        m.j = [[.25, .35, 1], [.7, .25, .8], [.5, .66, 1.2], [.82, .6, .7]];
+        m.b = Array.from({ length: 34 }, () => ({ x: r(), y: r(), p: r() * 6, k: r() }));
+      }
+      const c = clamp(S.c, 0, 2), d0 = c <= 1 ? lerp(60, 650, sm(c)) : lerp(650, 3200, sm(c - 1)), d = d0 + Math.sin(t * .4) * 14;
+      const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, ramp(OCEAN, d - 120)); g.addColorStop(1, ramp(OCEAN, d + 320));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      const ra = clamp(1 - d / 650) * .3;
+      if (ra > .01) {
+        ctx.globalAlpha = ra; ctx.fillStyle = "#d9f7ff";
+        for (let k = 0; k < 5; k++) {
+          const x0 = w * (.1 + .2 * k) + Math.sin(t * .3 + k) * 20;
+          ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0 + w * .08, 0); ctx.lineTo(x0 - w * .06, h); ctx.lineTo(x0 - w * .18, h); ctx.closePath(); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+      for (const p of m.p) {
+        const y = (((p.y * h - t * 18 * p.s * (.4 + p.z)) % h) + h) % h, x = p.x * w + Math.sin(t * .5 + p.z * 9) * 6;
+        ctx.fillStyle = "rgba(220,240,255," + (.25 + .4 * p.z).toFixed(2) + ")"; ctx.beginPath(); ctx.arc(x, y, .8 + p.z * 1.4, 0, TAU); ctx.fill();
+      }
+      const fa = clamp(1 - d / 500);
+      if (fa > .01) {
+        ctx.fillStyle = "rgba(207,238,251," + (.7 * fa).toFixed(2) + ")";
+        for (const f of m.f) {
+          const x = (((f.p + t * .03 * f.s) % 1.2) - .1) * w, y = h * f.y + Math.sin(t + f.p * 9) * 6, s = Math.min(w, h) * .035 * f.z;
+          ctx.beginPath(); ctx.ellipse(x, y, s, s * .5, 0, 0, TAU); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(x - s * .8, y); ctx.lineTo(x - s * 1.7, y - s * .55); ctx.lineTo(x - s * 1.7, y + s * .55); ctx.closePath(); ctx.fill();
+        }
+      }
+      const ja = clamp((d - 250) / 350) * (1 - .4 * clamp((d - 2200) / 1000));
+      if (ja > .01) {
+        ctx.save(); ctx.globalAlpha = ja;
+        for (const [jx, jy, js] of m.j) {
+          const x = w * jx + Math.sin(t * .4 + jy * 9) * 10, y = h * jy + Math.sin(t * .8 + jx * 7) * 8, r = Math.min(w, h) * .07 * js * (1 + .08 * Math.sin(t * 2 + jx * 9));
+          const gl = ctx.createRadialGradient(x, y, 0, x, y, r * 2.2); gl.addColorStop(0, "rgba(125,249,255,.35)"); gl.addColorStop(1, "rgba(125,249,255,0)");
+          ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, TAU); ctx.fill();
+          ctx.fillStyle = "rgba(125,249,255,.35)"; ctx.strokeStyle = "rgba(190,255,255,.8)"; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.arc(x, y, r, Math.PI, 0); ctx.quadraticCurveTo(x, y + r * .35, x - r, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.strokeStyle = "rgba(125,249,255,.45)";
+          for (let k = 0; k < 5; k++) {
+            const x0 = x - r * .7 + k * r * .35; ctx.beginPath(); ctx.moveTo(x0, y);
+            for (let s = 1; s <= 6; s++) ctx.lineTo(x0 + Math.sin(t * 1.5 + s * .9 + k) * r * .14 * s / 3, y + s * r * .36);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+      const bl = clamp((d - 450) / 400);
+      if (bl > .01) {
+        for (const b of m.b) {
+          if (Math.sin(t * 1.8 + b.p) < .55) continue;
+          const col = b.k > .5 ? "#7df9ff" : "#6aa8ff";
+          ctx.globalAlpha = bl * .9; ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8;
+          ctx.beginPath(); ctx.arc(b.x * w, b.y * h, 1.8, 0, TAU); ctx.fill();
+        }
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      }
+      const aa = clamp((d - 1800) / 1200);
+      if (aa > .01) {
+        const sz = Math.min(w, h) * .09, x = w * .62 + Math.sin(t * .3) * 12, y = h * .58 + Math.sin(t * .5) * 8;
+        ctx.save(); ctx.globalAlpha = aa;
+        const lx = x - sz * 1.5, ly = y - sz * 1.7 + Math.sin(t * 1.3) * 4;
+        ctx.strokeStyle = "#0a0e19"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - sz * .3, y - sz * .8); ctx.quadraticCurveTo(x - sz * .9, y - sz * 2, lx, ly); ctx.stroke();
+        const gl = ctx.createRadialGradient(lx, ly, 0, lx, ly, sz * 1.2); gl.addColorStop(0, "rgba(255,226,122,.95)"); gl.addColorStop(.3, "rgba(255,226,122,.35)"); gl.addColorStop(1, "rgba(255,226,122,0)");
+        ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(lx, ly, sz * 1.2, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#0a0e19"; ctx.beginPath(); ctx.ellipse(x, y, sz * 1.3, sz, 0, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x + sz * 1.2, y - sz * .2); ctx.lineTo(x + sz * 2, y - sz * .7); ctx.lineTo(x + sz * 2, y + sz * .7); ctx.lineTo(x + sz * 1.2, y + sz * .2); ctx.fill();
+        ctx.fillStyle = "#e9f6ff"; ctx.beginPath(); ctx.arc(x - sz * .6, y - sz * .2, sz * .13, 0, TAU); ctx.fill();
+        ctx.strokeStyle = "#e9f6ff"; ctx.lineWidth = 1.2; ctx.beginPath();
+        for (let k = 0; k < 5; k++) { const tx = x - sz * 1.15 + k * sz * .16; ctx.moveTo(tx, y + sz * .15); ctx.lineTo(tx + sz * .06, y + sz * .4); }
+        ctx.stroke(); ctx.restore();
+      }
+      const gx = w - 16, y1 = 28, y2 = h - 18;
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(gx, y1); ctx.lineTo(gx, y2); ctx.stroke();
+      ctx.font = "9px " + MONO; ctx.textAlign = "right"; ctx.fillStyle = "rgba(255,255,255,.6)";
+      for (let k = 0; k <= 4; k++) {
+        const ty = lerp(y1, y2, k / 4); ctx.beginPath(); ctx.moveTo(gx - 4, ty); ctx.lineTo(gx, ty); ctx.stroke();
+        ctx.fillText(k ? k + "k" : "0", gx - 8, ty + 3);
+      }
+      const my = lerp(y1, y2, clamp(d / 4000));
+      ctx.fillStyle = "#ffe27a"; ctx.beginPath(); ctx.moveTo(gx + 1, my); ctx.lineTo(gx + 9, my - 5); ctx.lineTo(gx + 9, my + 5); ctx.closePath(); ctx.fill();
+      ctx.textAlign = "left"; ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.font = "10px " + MONO; ctx.fillText("DEPTH", 14, 20);
+      ctx.fillStyle = "#fff"; ctx.font = "500 20px " + MONO; ctx.fillText(Math.round(d).toLocaleString("en-US") + " m", 14, 42);
+    }
+
+    function neural(S, ctx, w, h, t) {
+      const m = S.mem, L = [3, 5, 5, 2], c = clamp(S.c, 0, 2);
+      if (!m.pl) { const r = rng(9); m.pl = Array.from({ length: 44 }, () => ({ l: Math.floor(r() * 3), a: r(), b: r(), p: r(), k: r() })); }
+      const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#07131f"); g.addColorStop(1, "#0b1f33");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "rgba(160,210,255,.07)";
+      for (let x = 11; x < w; x += 22) for (let y = 11; y < h; y += 22) ctx.fillRect(x, y, 1.5, 1.5);
+      const pad = Math.min(w, h) * .14, gap = Math.min(h * .14, w * .16);
+      const X = l => lerp(pad, w - pad, l / 3), Y = (l, i) => h / 2 + (i - (L[l] - 1) / 2) * gap;
+      const learn = c / 2, hi0 = tri(c, 0);
+      const W = (l, i, j) => Math.sin(l * 3.1 + i * 1.7 + j * 2.3 + learn * t * .5);
+      for (let l = 0; l < 3; l++) for (let i = 0; i < L[l]; i++) for (let j = 0; j < L[l + 1]; j++) {
+        const wg = W(l, i, j), hi = (l === 0 && j === 2) ? hi0 : 0, dim = 1 - .65 * hi0 * (l === 0 && j === 2 ? 0 : 1);
+        const a = (.1 + .38 * Math.abs(wg)) * dim + .5 * hi;
+        ctx.strokeStyle = (wg > 0 ? "rgba(58,214,181," : "rgba(255,138,92,") + clamp(a).toFixed(3) + ")";
+        ctx.lineWidth = .5 + 1.6 * Math.abs(wg) + 1.4 * hi;
+        ctx.beginPath(); ctx.moveTo(X(l), Y(l, i)); ctx.lineTo(X(l + 1), Y(l + 1, j)); ctx.stroke();
+      }
+      const back = clamp(c - 1.1);
+      for (const p of m.pl) {
+        const l = p.l, i = Math.floor(p.a * L[l]), j = Math.floor(p.b * L[l + 1]), bk = p.k < back, pr = (t * .35 + p.p) % 1, u = bk ? 1 - pr : pr;
+        const x = lerp(X(l), X(l + 1), u), y = lerp(Y(l, i), Y(l + 1, j), u), col = bk ? "255,92,122" : "200,245,255";
+        ctx.shadowColor = "rgb(" + col + ")"; ctx.shadowBlur = 8; ctx.fillStyle = "rgba(" + col + "," + (.9 * Math.sin(pr * Math.PI)).toFixed(2) + ")";
+        ctx.beginPath(); ctx.arc(x, y, 2.4, 0, TAU); ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      const nr = Math.min(w, h) * .032 + 2;
+      for (let l = 0; l < 4; l++) for (let i = 0; i < L[l]; i++) {
+        const act = .5 + .5 * Math.sin(t * 1.3 + l * 1.1 + i * .8), x = X(l), y = Y(l, i);
+        ctx.fillStyle = mix("#12304a", "#a7ecff", act * .8); ctx.strokeStyle = "#cfefff"; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(x, y, nr, 0, TAU); ctx.fill(); ctx.stroke();
+        if (l === 1 && i === 2 && hi0 > .02) {
+          ctx.strokeStyle = "rgba(255,226,122," + hi0.toFixed(2) + ")"; ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.arc(x, y, nr + 5 + Math.sin(t * 3) * 1.5, 0, TAU); ctx.stroke();
+        }
+      }
+      if (w > 220) {
+        ctx.font = "9px " + MONO; ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.textAlign = "center";
+        ["Input", "Hidden", "Hidden", "Output"].forEach((s, l) => ctx.fillText(s, X(l), h - 14));
+        ctx.textAlign = "left";
+      }
+    }
+
+    function drawPhase(ctx, x, y, r, phi) {
+      const k = Math.cos(phi), side = Math.sin(phi) >= 0 ? 1 : -1;
+      ctx.fillStyle = "#262b36"; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#ece8d8"; ctx.beginPath();
+      if (side === 1) ctx.arc(x, y, r, -Math.PI / 2, Math.PI / 2); else ctx.arc(x, y, r, Math.PI / 2, Math.PI * 1.5);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = k > 0 ? "#262b36" : "#ece8d8";
+      ctx.beginPath(); ctx.ellipse(x, y, Math.max(.01, r * Math.abs(k)), r, 0, 0, TAU); ctx.fill();
+    }
+    function moon(S, ctx, w, h, t) {
+      const m = S.mem;
+      if (!m.st) { const r = rng(21); m.st = Array.from({ length: 80 }, () => ({ x: r(), y: r(), s: r() * 1.1 + .3, p: r() * TAU })); }
+      const c = clamp(S.c, 0, 2);
+      ctx.fillStyle = "#04060f"; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      for (const s of m.st) { ctx.globalAlpha = .3 + .35 * Math.sin(t * 1.2 + s.p); ctx.fillRect(s.x * w, s.y * h, s.s, s.s); }
+      ctx.globalAlpha = 1;
+      const U = Math.min(w, h), cx = w * .5, cy = h * .56, R = U * .15, Ro = U * .36;
+      const sg = ctx.createRadialGradient(0, cy, 0, 0, cy, w * .55); sg.addColorStop(0, "rgba(255,214,120,.4)"); sg.addColorStop(1, "rgba(255,214,120,0)");
+      ctx.fillStyle = sg; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(255,226,150,.22)"; ctx.lineWidth = 1; ctx.setLineDash([8, 10]); ctx.lineDashOffset = -t * 24;
+      for (const dy of [-.5, 0, .5]) { ctx.beginPath(); ctx.moveTo(0, cy + dy * R * 2.2); ctx.lineTo(cx - Ro * 1.1, cy + dy * R * 2.2); ctx.stroke(); }
+      ctx.setLineDash([]);
+      ctx.strokeStyle = "rgba(255,255,255,.16)"; ctx.setLineDash([3, 6]); ctx.beginPath(); ctx.arc(cx, cy, Ro, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+      const thS = Math.PI, thM = t * .55, phi = thM - thS;
+      const bm = R * (.04 + .18 * sm(c)), bs = bm * .46 * sm(c - 1);
+      ctx.fillStyle = "#2f86d6"; ctx.beginPath();
+      for (let a = 0; a <= TAU + .01; a += .08) {
+        const r = R * 1.0 + bm * Math.cos(2 * (a - thM)) + bs * Math.cos(2 * (a - thS));
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; a ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R * .86, 0, TAU); ctx.clip(); ctx.fillStyle = "#4f9a62";
+      for (let k = 0; k < 4; k++) { const a = k * 1.7 + t * .5; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * R * .45, cy + Math.sin(a) * R * .45, R * (.2 + .06 * (k % 2)), 0, TAU); ctx.fill(); }
+      ctx.restore();
+      const mx = cx + Math.cos(thM) * Ro, my = cy + Math.sin(thM) * Ro, mr = R * .3;
+      ctx.fillStyle = "#262b36"; ctx.beginPath(); ctx.arc(mx, my, mr, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#ece8d8"; ctx.beginPath(); ctx.arc(mx, my, mr, Math.PI / 2, Math.PI * 1.5); ctx.closePath(); ctx.fill();
+      const ri = U * .085, ix = w - ri - 18, iy = ri + 18, f = (1 - Math.cos(phi)) / 2;
+      ctx.globalAlpha = .65 + .35 * tri(c, 0); drawPhase(ctx, ix, iy, ri, phi); ctx.globalAlpha = 1;
+      ctx.font = "9px " + MONO; ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.7)";
+      ctx.fillText(Math.round(f * 100) + "% lit", ix, iy + ri + 14); ctx.textAlign = "left";
+    }
+    const SCENES = { solar, water, sound, ocean, neural, moon };
+    const SCENE_LIST = [
+      ["solar", "Solar system", "#F2A93B"], ["water", "Water cycle", "#5BA8F0"], ["sound", "Sound waves", "#F0568D"],
+      ["ocean", "Ocean descent", "#22D3C5"], ["neural", "Neural network", "#B8E04A"], ["moon", "Moon and tides", "#D9D4C0"]
+    ];
+
+    /* ---------- stage: one canvas, one scene, eased chapter value ---------- */
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const stages = new Set();
+    let raf = 0, last = 0;
+    class Stage {
+      constructor(canvas, scene, ch = 0) {
+        this.cv = canvas; this.ctx = canvas.getContext("2d"); this.scene = scene; this.c = ch; this.target = ch;
+        this.mem = {}; this.vis = true; this.w = 0; this.h = 0; this.dpr = 1;
+        this.ro = new ResizeObserver(() => { this.size(); if (reduce) this.draw(3, 1); });
+        this.ro.observe(canvas);
+        this.io = new IntersectionObserver(es => { this.vis = es[es.length - 1].isIntersecting; });
+        this.io.observe(canvas);
+        stages.add(this);
+        if (!raf && !reduce) raf = requestAnimationFrame(loop);
+      }
+      size() {
+        const r = this.cv.getBoundingClientRect();
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        this.w = Math.max(1, r.width); this.h = Math.max(1, r.height);
+        this.cv.width = Math.round(this.w * this.dpr); this.cv.height = Math.round(this.h * this.dpr);
+      }
+      go(i) { this.target = i % 3; if (reduce) { this.c = this.target; this.draw(3, 1); } }
+      setScene(s) { this.scene = s; this.mem = {}; if (reduce) this.draw(3, 1); }
+      draw(t, dt) {
+        if (this.w < 8 || this.h < 8) return;
+        this.c += (this.target - this.c) * (reduce ? 1 : 1 - Math.exp(-dt * 3));
+        const x = this.ctx; x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); x.clearRect(0, 0, this.w, this.h);
+        x.textAlign = "left"; x.globalAlpha = 1; x.setLineDash([]);
+        SCENES[this.scene](this, x, this.w, this.h, t);
+      }
+      destroy() { this.ro.disconnect(); this.io.disconnect(); stages.delete(this); }
+    }
+    function loop(now) {
+      raf = 0;
+      if (!stages.size) return;
+      const t = now / 1000, dt = Math.min(.05, t - last || .016); last = t;
+      for (const s of stages) if (s.vis) s.draw(t, dt);
+      raf = requestAnimationFrame(loop);
+    }
+    function cleanup() { for (const s of [...stages]) s.destroy(); active = null; }
+
+    /* ---------- content ---------- */
+    const BOOKS = [
+      {
+        id: "solar-system", scene: "solar", title: "The Solar System", tag: "Astronomy", accent: "#F2A93B", chapters: [
+          {
+            title: "The rocky inner worlds", cap: "Orbits of the four inner planets, time sped up",
+            body: ["Four small, dense planets circle closest to the Sun: Mercury, Venus, Earth and Mars. Mercury races around in 88 days, while Earth takes a year. Venus is the hottest of them, with a surface near 465 °C under a thick blanket of carbon dioxide.",
+              "Mars is cold and dusty, but it holds Olympus Mons, a volcano about 22 km tall, roughly two and a half times the height of Mount Everest. Distances out here are measured in astronomical units, where one unit is the gap between Earth and the Sun."],
+            fig: { k: "1 astronomical unit", v: "149.6 million km" }
+          },
+          {
+            title: "Giants of gas and ice", cap: "The view widens out to Saturn, time sped up",
+            body: ["Beyond Mars the planets get huge. Jupiter could swallow more than 1,300 Earths, yet it spins once in just under ten hours, which flattens it slightly at the poles. Saturn is lighter than water on average, and its bright rings are mostly chunks of ice.",
+              "Uranus and Neptune are called ice giants because they hold large amounts of water, ammonia and methane around a rocky core. Methane in their air absorbs red light, which gives both planets their blue tint."],
+            fig: { k: "One day on Jupiter", v: "9 h 56 min" }
+          },
+          {
+            title: "The cold edge", cap: "Full view out to Neptune at 30 AU",
+            body: ["Neptune orbits about 30 times farther from the Sun than Earth does. Sunlight needs roughly four hours to get there, and a single Neptune year lasts 165 Earth years. Past it lies the Kuiper Belt, a wide ring of icy bodies that includes Pluto.",
+              "Voyager 1, launched in 1977, crossed into interstellar space in 2012 and is now more than 160 AU from the Sun. Its radio signals take about a day to reach us."],
+            fig: { k: "Sunlight to Neptune", v: "about 4 hours" }
+          }
+        ]
+      },
+      {
+        id: "water-cycle", scene: "water", title: "The Water Cycle", tag: "Earth science", accent: "#5BA8F0", chapters: [
+          {
+            title: "Rising into the air", cap: "Evaporation: warm water lifts off as vapor",
+            body: ["Sunlight warms the surface of oceans, lakes and soil, and some water molecules gain enough energy to leave as invisible vapor. Oceans hold about 97% of Earth’s water, so most of it starts here.",
+              "Plants add to the flow. They pull water up through their roots and release vapor through tiny pores in their leaves, a process called transpiration. A single large tree can release hundreds of litres on a hot day."],
+            fig: { k: "Ocean share of Earth’s water", v: "about 97%" }
+          },
+          {
+            title: "Cooling into clouds", cap: "Condensation: vapor gathers into droplets",
+            body: ["Rising air expands and cools. Cool air cannot hold as much vapor, so the water condenses onto specks of dust, salt or smoke and forms droplets far too small to fall.",
+              "Billions of these droplets make a cloud. A fluffy cumulus cloud can hold about 500 tonnes of water, kept aloft by rising air."],
+            fig: { k: "Typical cloud droplet", v: "about 0.01 mm wide" }
+          },
+          {
+            title: "Falling and flowing", cap: "Precipitation and runoff carry water back to the sea",
+            body: ["When droplets merge into bigger ones, they become heavy enough to fall as rain, snow or hail. Large raindrops reach about 9 m/s, which is why they sting more than a drizzle.",
+              "On the ground, water soaks into soil or runs downhill into streams and rivers. Most of it eventually reaches the sea, and the cycle starts again."],
+            fig: { k: "Large raindrop speed", v: "up to 9 m/s" }
+          }
+        ]
+      },
+      {
+        id: "sound-waves", scene: "sound", title: "How Sound Works", tag: "Physics", accent: "#F0568D", chapters: [
+          {
+            title: "Everything starts with a shake", cap: "One wave travelling through air",
+            body: ["Sound is a vibration that travels as a pressure wave. A speaker cone pushes air molecules together, then pulls them apart, and the pattern moves outward while each molecule only shuffles back and forth.",
+              "Waves need something to travel through. In air at 20 °C, sound moves at about 343 metres per second. It is faster in water and faster still in steel, and it cannot cross a vacuum."],
+            fig: { k: "Speed of sound in air", v: "343 m/s at 20 °C" }
+          },
+          {
+            title: "Pitch and loudness", cap: "Two waves with different frequency and amplitude",
+            body: ["Frequency is how many waves pass each second, measured in hertz. More waves per second sounds higher. Concert pitch for the note A is 440 Hz, and people can usually hear from about 20 Hz to 20,000 Hz.",
+              "Amplitude is how tall the wave is. A taller wave carries more energy and sounds louder, which we measure in decibels."],
+            fig: { k: "Concert A", v: "440 Hz" }
+          },
+          {
+            title: "When waves meet", cap: "Adding two waves makes a third one",
+            body: ["Waves that overlap simply add together. Where two peaks line up the result is bigger, and where a peak meets a trough they cancel. Play two notes of nearly the same pitch and you hear a slow throb called beats.",
+              "Noise-cancelling headphones use the same idea. A microphone samples the noise and the earpiece plays an upside-down copy, so the two waves cancel before they reach your ear."],
+            fig: { k: "Beat rate", v: "440 Hz + 444 Hz = 4 beats per second" }
+          }
+        ]
+      },
+      {
+        id: "deep-ocean", scene: "ocean", title: "Descent into the Deep", tag: "Oceanography", accent: "#22D3C5", chapters: [
+          {
+            title: "The sunlit zone", cap: "Down to 200 m, where light still reaches",
+            body: ["The top 200 metres get enough sunlight for algae to photosynthesise, so this is where most marine life lives. Colours vanish with depth, and red light is absorbed within roughly the first 10 metres.",
+              "Pressure climbs fast too. Every 10 metres of seawater adds about one atmosphere, so at 30 metres the pressure is roughly four times what it is at the surface."],
+            fig: { k: "Sunlit zone", v: "0 to 200 m" }
+          },
+          {
+            title: "The twilight zone", cap: "Descent to about 650 m, light fading",
+            body: ["Between 200 and 1,000 metres the light fades to a dim blue glow, too weak for photosynthesis. Many animals here rise at night to feed near the surface and sink again at dawn, the largest daily migration on Earth.",
+              "Others make their own light. Bioluminescence, a chemical reaction inside the body, lets animals signal, lure prey or confuse predators."],
+            fig: { k: "Twilight zone", v: "200 to 1,000 m" }
+          },
+          {
+            title: "The midnight zone", cap: "Below 1,000 m there is no sunlight at all",
+            body: ["Below 1,000 metres the water is dark, near freezing and under crushing pressure. Food arrives as marine snow, the slow fall of dead plankton and waste. Animals here save energy, and some, like the anglerfish, dangle a glowing lure to attract prey.",
+              "The deepest point, the Challenger Deep in the Mariana Trench, lies about 10,935 metres down, where the pressure is over 1,000 times the pressure at the surface."],
+            fig: { k: "Challenger Deep", v: "about 10,935 m" }
+          }
+        ]
+      },
+      {
+        id: "neural-networks", scene: "neural", title: "How Neural Networks Learn", tag: "Computing", accent: "#B8E04A", chapters: [
+          {
+            title: "A neuron is arithmetic", cap: "One neuron receives weighted signals",
+            body: ["An artificial neuron is far simpler than a brain cell. It takes several numbers, multiplies each by a weight that says how much it matters, adds them up and passes the total through a function that decides how strongly to fire.",
+              "Green links in the picture are positive weights and orange links are negative. A neuron with the right weights can pick out a simple pattern, such as whether a pixel is bright."],
+            fig: { k: "One neuron", v: "Σ (input × weight) + bias" }
+          },
+          {
+            title: "Layers build understanding", cap: "Signals flow forward through the layers",
+            body: ["Stack neurons into layers and each layer reads the one before it. In an image model, early layers respond to edges, middle layers to shapes, and later layers to whole objects such as a wheel or a face.",
+              "Today’s large language models use the same pattern at enormous scale, with billions of weights adjusted during training."],
+            fig: { k: "Weights in a large model", v: "billions" }
+          },
+          {
+            title: "Learning from mistakes", cap: "Error flows backward and the weights adjust",
+            body: ["To learn, the network makes a guess and measures how wrong it was. That error is sent backward through the layers, a step called backpropagation, which shows how much each weight contributed to the mistake.",
+              "Each weight is then nudged a small step in the direction that reduces the error. Repeat this millions of times with many examples and the guesses improve."],
+            fig: { k: "Update rule", v: "weight − rate × gradient" }
+          }
+        ]
+      },
+      {
+        id: "moon-tides", scene: "moon", title: "The Moon and the Tides", tag: "Astronomy", accent: "#D9D4C0", chapters: [
+          {
+            title: "Why the Moon changes shape", cap: "The Sun always lights half of the Moon",
+            body: ["The Moon is always half lit by the Sun. What changes is how much of that lit half faces us as the Moon circles Earth. When it sits between us and the Sun we see almost none of it, a new moon. Half an orbit later the whole face is lit, a full moon.",
+              "One full cycle of phases takes 29.5 days, a little longer than the 27.3 days the Moon needs to circle Earth, because Earth is also moving around the Sun."],
+            fig: { k: "Cycle of phases", v: "29.5 days" }
+          },
+          {
+            title: "Pulling on the oceans", cap: "Tidal bulges follow the Moon (exaggerated)",
+            body: ["The Moon’s gravity pulls hardest on the side of Earth nearest to it and weakest on the far side. The result is two bulges of water, one facing the Moon and one on the opposite side.",
+              "Earth spins through both bulges each day, so most coasts see two high tides daily. Because the Moon also moves along its orbit, the tides arrive about 50 minutes later each day."],
+            fig: { k: "Gap between moonrises", v: "about 24 h 50 min" }
+          },
+          {
+            title: "Spring and neap tides", cap: "The Sun adds its own, smaller bulge",
+            body: ["The Sun also raises tides, though only about 46% as strongly as the Moon. At new and full moon the Sun, Moon and Earth line up and their bulges add together, giving the largest tidal range, called spring tides.",
+              "At the quarter moons the two pulls act at right angles and partly cancel, giving the gentler neap tides. The word spring has nothing to do with the season."],
+            fig: { k: "Sun’s tidal pull", v: "about 46% of the Moon’s" }
+          }
+        ]
+      }
+    ];
+
+    /* ---------- state ---------- */
+    const KEY = "marginalia-v1";
+    const store = { ch: {}, seen: {}, fs: 1.125, theme: null, custom: [] };
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && typeof p === "object") {
+          if (p.ch && typeof p.ch === "object") store.ch = p.ch;
+          if (p.seen && typeof p.seen === "object") store.seen = p.seen;
+          if (typeof p.fs === "number") store.fs = clamp(p.fs, .95, 1.5);
+          if (p.theme === "light" || p.theme === "dark") store.theme = p.theme;
+          if (Array.isArray(p.custom)) store.custom = p.custom.filter(b => b && typeof b.id === "string" && SCENES[b.scene] && Array.isArray(b.chapters) && b.chapters.length);
+        }
+      }
+    } catch (e) { }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { } }
+    const all = () => [...BOOKS, ...store.custom];
+    const words = b => b.chapters.reduce((n, c) => n + c.body.join(" ").split(/\s+/).length, 0);
+    const mins = b => Math.max(1, Math.round(words(b) / 200));
+    let active = null;
+
+    /* ---------- theme ---------- */
+    const themeBtn = $("#theme");
+    const effective = () => document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    function paintTheme() { themeBtn.textContent = effective() === "dark" ? "Light mode" : "Dark mode"; }
+    if (store.theme) document.documentElement.dataset.theme = store.theme;
+    themeBtn.addEventListener("click", () => {
+      const next = effective() === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next; store.theme = next; save(); paintTheme();
+    });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintTheme);
+    paintTheme();
+
+    /* ---------- views ---------- */
+    const view = $("#view");
+
+    function cover(b) {
+      const seen = store.seen[b.id] || [];
+      const pct = b.chapters.filter((_, i) => seen[i] === true).length / b.chapters.length * 100;
+      const cv = h("canvas", { "aria-hidden": "true" });
+      const a = h("a", { class: "cover", href: "#" + b.id, style: "--topic:" + b.accent, "aria-label": b.title + ", " + b.chapters.length + " chapters" },
+        cv, h("span", { class: "shade" }),
+        h("span", { class: "meta" },
+          h("span", { class: "tag" }, b.tag),
+          h("span", { class: "ctitle" }, b.title),
+          h("span", { class: "sub" }, b.chapters.length + " chapters · " + mins(b) + " min"),
+          h("span", { class: "bar" }, h("i", { style: "width:" + pct + "%" }))));
+      const st = new Stage(cv, b.scene, 0); let n = 0;
+      a.addEventListener("pointerenter", () => { n = (n + 1) % 3; st.go(n); });
+      return a;
+    }
+
+    function library() {
+      const books = all();
+      view.replaceChildren(
+        h("section", { class: "intro" },
+          h("div", null,
+            h("p", { class: "eyebrow", style: "margin-bottom:14px" }, "Library · " + books.length + " books"),
+            h("h1", null, "Pick a topic. Watch it move.")),
+          h("p", { class: "lede" }, "Short illustrated books. Every topic has its own live animation, and it changes as you turn the chapter. Add a book of your own at the end of the shelf.")),
+        h("div", { class: "shelf" }, books.map(cover),
+          h("a", { class: "cover add", href: "#new-book" }, h("span", { class: "add-in" }, h("b", null, "+"), h("span", null, "Write your own"), h("small", null, "Pick an animation, add chapters")))));
+    }
+
+    function reader(b) {
+      let idx = Math.min(Math.max(0, store.ch[b.id] | 0), b.chapters.length - 1);
+      if (!Array.isArray(store.seen[b.id])) store.seen[b.id] = [];
+      store.seen[b.id][idx] = true;
+      const cv = h("canvas", { "aria-hidden": "true" });
+      const cap = h("figcaption", { class: "cap" });
+      const toc = h("nav", { class: "toc", "aria-label": "Chapters" });
+      const page = h("article", { class: "page" });
+      const stage = new Stage(cv, b.scene, idx % 3);
+      const sceneName = (SCENE_LIST.find(s => s[0] === b.scene) || [])[1] || "Animation";
+      const root = h("div", { class: "reader", style: "--topic:" + b.accent + ";--fs:" + store.fs });
+
+      function show(i, dir) {
+        if (i < 0 || i >= b.chapters.length) return;
+        idx = i; store.ch[b.id] = i; store.seen[b.id][i] = true; save(); stage.go(i); build(dir);
+      }
+      function build(dir) {
+        const ch = b.chapters[idx], seen = store.seen[b.id], n = b.chapters.length, last = idx === n - 1;
+        cap.textContent = ch.cap || sceneName;
+        toc.replaceChildren(...b.chapters.map((c, i) => h("button", { type: "button", "aria-current": i === idx ? "true" : null, onclick: () => show(i, i > idx ? 1 : -1) },
+          h("span", { class: "n" }, String(i + 1).padStart(2, "0")), h("span", null, c.title), h("span", { class: "dot" + (seen[i] === true ? " on" : "") }))));
+        const sheet = h("div", { class: "sheet", style: "--dx:" + (dir * 22) + "px" },
+          h("div", { class: "segs", "aria-hidden": "true" }, b.chapters.map((_, i) => h("span", { class: "seg" + (i === idx ? " cur" : seen[i] === true ? " seen" : "") }))),
+          h("p", { class: "eyebrow" }, "Chapter " + (idx + 1) + " of " + n),
+          h("h2", null, ch.title),
+          ch.body.map(p => h("p", null, p)),
+          ch.fig ? h("dl", { class: "fact" }, h("dt", null, ch.fig.k), h("dd", null, ch.fig.v)) : null,
+          h("div", { class: "pager" },
+            idx > 0 ? h("button", { class: "btn", type: "button", onclick: () => show(idx - 1, -1) }, h("small", null, "Previous"), h("span", null, b.chapters[idx - 1].title)) : h("span", { class: "ph" }),
+            last ? h("a", { class: "btn nx", href: "#" }, h("small", null, "Finished"), h("span", null, "Back to library"))
+              : h("button", { class: "btn nx", type: "button", onclick: () => show(idx + 1, 1) }, h("small", null, "Next"), h("span", null, b.chapters[idx + 1].title))));
+        page.replaceChildren(sheet);
+        const top = page.getBoundingClientRect().top;
+        if (dir && top < 0) window.scrollBy({ top: top - 80, behavior: reduce ? "auto" : "smooth" });
+      }
+      function fontStep(d) { store.fs = clamp(Math.round((store.fs + d) * 1000) / 1000, .95, 1.5); root.style.setProperty("--fs", store.fs); save(); }
+
+      let armed = false, timer = 0;
+      const del = b.custom ? h("button", {
+        class: "btn", type: "button", onclick: () => {
+          if (!armed) { armed = true; del.textContent = "Confirm delete"; timer = setTimeout(() => { armed = false; del.textContent = "Delete book"; }, 4000); return; }
+          clearTimeout(timer);
+          store.custom = store.custom.filter(x => x.id !== b.id); delete store.ch[b.id]; delete store.seen[b.id]; save(); location.hash = "";
+        }
+      }, "Delete book") : null;
+
+      root.append(
+        h("div", { class: "reader-bar" },
+          h("a", { class: "btn", href: "#" }, "← Library"),
+          h("div", { class: "tools" }, del,
+            h("button", { class: "btn", type: "button", "aria-label": "Smaller text", onclick: () => fontStep(-.075) }, "A−"),
+            h("button", { class: "btn", type: "button", "aria-label": "Larger text", onclick: () => fontStep(.075) }, "A+"))),
+        h("div", { class: "reader-grid" },
+          h("aside", { class: "side" },
+            h("figure", { class: "scene", role: "img", "aria-label": sceneName + " animation for " + b.title, style: "margin:0" }, cv),
+            cap, toc),
+          page));
+      view.replaceChildren(root);
+      build(0);
+      active = { next: () => show(idx + 1, 1), prev: () => show(idx - 1, -1) };
+    }
+
+    function parseBook(text) {
+      const chs = []; let cur = null;
+      const flush = c => { if (c.buf.length) { c.paras.push(c.buf.join(" ")); c.buf = []; } };
+      for (const line of text.split("\n")) {
+        const mm = line.match(/^##\s+(.+)/);
+        if (mm) { if (cur) flush(cur); cur = { title: mm[1].trim().slice(0, 80), paras: [], buf: [] }; chs.push(cur); continue; }
+        if (!cur) { if (!line.trim()) continue; cur = { title: "Chapter 1", paras: [], buf: [] }; chs.push(cur); }
+        if (line.trim()) cur.buf.push(line.trim()); else flush(cur);
+      }
+      if (cur) flush(cur);
+      return chs.filter(c => c.paras.length).slice(0, 12).map(c => ({ title: c.title, body: c.paras, fig: null, cap: null }));
+    }
+
+    function composer() {
+      let scene = "water";
+      const cv = h("canvas", { "aria-hidden": "true" });
+      const stage = new Stage(cv, scene, 0);
+      const err = h("p", { class: "err", role: "alert", hidden: true });
+      const title = h("input", { type: "text", id: "book-title", maxlength: "60", value: "How bread works", autocomplete: "off" });
+      const text = h("textarea", { id: "book-text" },
+        "## Why dough rises\nYeast eats the sugars in dough and gives off carbon dioxide. The gas gets trapped in a stretchy network of gluten, so the dough swells.\n\n## What the oven does\nHeat makes the trapped gas expand, then the yeast dies and the structure sets. The crust browns through the Maillard reaction, which is why baked bread smells so different from raw dough.");
+      const picker = h("div", { class: "picker", role: "radiogroup", "aria-label": "Animation" }, SCENE_LIST.map(([key, name]) =>
+        h("label", { class: "opt" }, h("input", { type: "radio", name: "scene", id: "scene-" + key, value: key, checked: key === scene, onchange: () => { scene = key; stage.setScene(key); } }), h("span", null, name))));
+      const form = h("form", {
+        class: "compose", novalidate: true, onsubmit: e => {
+          e.preventDefault();
+          const t = title.value.trim(), chapters = parseBook(text.value);
+          if (!t) { err.textContent = "Give your book a title."; err.hidden = false; title.focus(); return; }
+          if (!chapters.length) { err.textContent = "Add some text. Start a chapter with a line like ## Chapter title."; err.hidden = false; text.focus(); return; }
+          const info = SCENE_LIST.find(s => s[0] === scene);
+          const book = {
+            id: "my-" + Math.random().toString(36).slice(2, 8), custom: true, scene, title: t, tag: "Your book", accent: info[2],
+            chapters: chapters.map(c => ({ ...c, cap: info[1] }))
+          };
+          store.custom.push(book); save(); location.hash = book.id;
+        }
+      },
+        h("div", null, h("p", { class: "eyebrow", style: "margin-bottom:12px" }, "New book"), h("h1", null, "Write your own")),
+        h("figure", { class: "scene", style: "margin:0;aspect-ratio:16/7" }, cv),
+        h("div", { class: "field" }, h("label", { for: "book-title" }, "Title"), title),
+        h("fieldset", { class: "field" }, h("legend", null, "Animation"), picker),
+        h("div", { class: "field" }, h("label", { for: "book-text" }, "Chapters"), text,
+          h("p", { class: "hint" }, "Start each chapter with ## and a title. Leave a blank line between paragraphs. The animation shifts through its three states as you turn chapters. This is an example you can replace.")),
+        err,
+        h("div", { class: "row" }, h("button", { class: "btn primary", type: "submit" }, "Add to library"), h("a", { class: "btn", href: "#" }, "Cancel")),
+        h("p", { class: "hint" }, "Saved in this browser only."));
+      view.replaceChildren(form);
+    }
+
+    function route() {
+      cleanup();
+      const id = location.hash.slice(1);
+      if (id === "new-book") composer();
+      else {
+        const b = id && all().find(x => x.id === id);
+        if (b) reader(b); else library();
+      }
+      window.scrollTo(0, 0);
+    }
+    addEventListener("hashchange", route);
+    document.addEventListener("keydown", e => {
+      if (!active || e.target.closest("input,textarea,select") || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "ArrowRight") active.next();
+      else if (e.key === "ArrowLeft") active.prev();
+    });
+    route();
+  </script>
+
+</body>
+
+</html>
