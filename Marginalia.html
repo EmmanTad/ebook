@@ -745,6 +745,65 @@
         transition: none !important
       }
     }
+
+
+    /* Business series: its own look (bold typographic covers, hero card, callouts) */
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line) }
+    .section-head h2 { margin: 0; font-weight: 800; font-size: clamp(1.5rem, 3.4vw, 2.2rem); letter-spacing: -.02em }
+    .section-head p { margin: 0; font: 400 .95rem/1.5 var(--font-body); color: var(--muted); max-width: 46ch }
+    .cover.biz { background: var(--bz); border-radius: 4px 16px 16px 4px }
+    .bz-art { position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(circle at 88% 16%, color-mix(in srgb, var(--pop) 30%, transparent) 0 20%, transparent 21%),
+        radial-gradient(circle at 88% 16%, transparent 0 27%, color-mix(in srgb, var(--pop) 45%, transparent) 27.6% 28.6%, transparent 29.2%),
+        repeating-linear-gradient(135deg, transparent 0 16px, rgba(255, 255, 255, .05) 16px 17px),
+        linear-gradient(to top, rgba(0, 0, 0, .35), transparent 60%) }
+    .bz-num { position: absolute; z-index: 1; top: 12px; left: 22px; font: 800 4.4rem/1 var(--font-display); letter-spacing: -.05em; color: var(--pop); transition: transform .3s ease }
+    .cover.biz:hover .bz-num { transform: translateY(3px) scale(1.04) }
+    .cover.biz .ctitle { font-weight: 800; font-size: 1.3rem; line-height: 1.06 }
+    .cover.biz .tag { justify-self: start; color: var(--bz); background: var(--pop); padding: 5px 9px; border-radius: 999px; font-weight: 500 }
+    .cover.biz .tag::before { display: none }
+    .cover.biz .bar i { background: var(--pop) }
+
+    .hero { position: relative; overflow: hidden; isolation: isolate; background: var(--bz); color: #fff; border-radius: 16px; padding: 24px 22px 20px; min-height: 250px; display: grid; gap: 10px; align-content: end }
+    .hero::before { content: ""; position: absolute; z-index: -1; right: -70px; top: -70px; width: 240px; height: 240px; border-radius: 50%; border: 36px solid color-mix(in srgb, var(--pop) 32%, transparent) }
+    .hero::after { content: ""; position: absolute; z-index: -1; inset: 0; background: repeating-linear-gradient(135deg, transparent 0 16px, rgba(255, 255, 255, .045) 16px 17px) }
+    .hero-no { position: absolute; top: 14px; left: 22px; font: 800 4.2rem/1 var(--font-display); letter-spacing: -.05em; color: var(--pop) }
+    .hero-tag { justify-self: start; font: 500 .66rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--bz); background: var(--pop); padding: 5px 9px; border-radius: 999px }
+    .hero-title { margin: 0; font: 800 clamp(1.5rem, 3vw, 1.95rem)/1.08 var(--font-display); letter-spacing: -.02em; text-wrap: balance }
+    .hero-cap { margin: 0; font: 400 .76rem/1.45 var(--font-mono); color: rgba(255, 255, 255, .78) }
+    .hero-bar { display: block; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .22); margin-top: 4px }
+    .hero-bar i { display: block; height: 100%; border-radius: 2px; background: var(--pop); transition: width .4s ease }
+
+    .reader.biz .page { border-radius: 16px; border-top: 6px solid var(--topic) }
+    .step { display: block; font: 800 clamp(3.4rem, 9vw, 5.6rem)/.9 var(--font-display); letter-spacing: -.05em; margin: 0 0 10px; color: color-mix(in srgb, var(--topic) 70%, var(--paper)) }
+    .reader.biz .sheet h2 { margin-top: 4px }
+    .reader.biz .fact { background: var(--bz); color: #fff; border: 0; border-left: 6px solid var(--pop); border-radius: 12px; padding: 18px 20px }
+    .reader.biz .fact dt { color: var(--pop) }
+    .reader.biz .fact dt::before { content: "\2192"; width: auto; height: auto; background: none; border-radius: 0 }
+    .reader.biz .toc button { border: 1px solid var(--line); background: var(--surface) }
+    .reader.biz .toc { gap: 6px }
+    .reader.biz .toc button[aria-current="true"] { background: var(--bz); border-color: var(--bz); color: #fff }
+    .reader.biz .toc button[aria-current="true"] .n { color: var(--pop) }
+    .reader.biz .toc button[aria-current="true"] .dot { border-color: var(--pop) }
+    .reader.biz .pager .nx { background: var(--bz); border-color: var(--bz); color: #fff }
+    .reader.biz .pager .nx small { color: var(--pop) }
+    @media (min-width: 920px) { .hero { min-height: 340px } }
+
+    /* Print / download */
+    #print-area { display: none }
+    @media print {
+      @page { margin: 18mm }
+      body { background: #fff !important; color: #000 !important; padding: 0 !important }
+      body::before, .wrap, .top { display: none !important }
+      #print-area { display: block !important; font-family: var(--font-body); font-size: 11.5pt; line-height: 1.55; color: #000 }
+      #print-area h1 { font: 800 26pt/1.15 var(--font-display); margin: 0 0 4pt }
+      #print-area .pa-tag { font: 500 9pt var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: #555; margin: 0 0 18pt }
+      #print-area section { break-inside: avoid-page; margin-bottom: 20pt }
+      #print-area h2 { font: 700 16pt/1.25 var(--font-display); margin: 0 0 6pt; break-after: avoid }
+      #print-area p { margin: 0 0 8pt }
+      #print-area .pa-fact { border-left: 3pt solid #888; padding-left: 8pt; margin: 8pt 0 0; font-size: 10.5pt }
+    }
   </style>
 
   <div class="wrap">
@@ -1297,6 +1356,146 @@
             fig: { k: "Sun’s tidal pull", v: "about 46% of the Moon’s" }
           }
         ]
+      },
+      {
+        id: "zero-capital", design: "biz", no: "01", bg: "#0F3D3E", pop: "#F4C95D", scene: "water", title: "How to Start an Online Business with Zero Capital", tag: "Business", accent: "#F4C95D", chapters: [
+          {
+            title: "Sell your time before you sell a product", cap: "Start small, keep it flowing",
+            body: ["Zero capital does not mean zero resources. You already own skills, time and a phone or computer. The fastest way to start without money is to sell a service, because a service needs no inventory, no stock and no factory.",
+              "Think about what people already ask you for help with: writing, design, editing, tutoring, data entry, social media, translation, virtual assistance. Pick one problem you can solve well and describe it in a single sentence a stranger would understand."],
+            fig: { k: "Your first product", v: "a skill you already have" }
+          },
+          {
+            title: "Pick one offer and one customer", cap: "One clear channel beats many weak ones",
+            body: ["New business owners fail by being vague. “I do many things” is hard to buy. “I edit YouTube videos for fitness coaches” is easy to buy. Choose one type of customer, one problem and one outcome.",
+              "Write your offer as three lines: who it is for, what result you deliver, and how long it takes. Set a simple starting price. You can raise it later, once people are saying yes quickly."],
+            fig: { k: "Offer formula", v: "who + result + timeframe" }
+          },
+          {
+            title: "Use free tools to look professional", cap: "Free tools are enough to launch",
+            body: ["You can build a credible presence for free. Use a free design tool for a simple logo and sample work, a free page or link-in-bio tool for a home base, a free email account for communication and a free invoicing or payment link to get paid.",
+              "Create two or three sample pieces of work even if you have no clients yet. Samples show what you can do, and they remove the buyer’s biggest fear, which is not knowing what they will receive."],
+            fig: { k: "Minimum setup", v: "samples + profile + a way to get paid" }
+          },
+          {
+            title: "Get paid, then reinvest", cap: "Let early income feed the next step",
+            body: ["Your first payment proves the idea works. Resist the urge to spend it. Set aside a share for tax or fees where they apply, then use the rest to buy one tool or one improvement that helps you earn more.",
+              "Repeat the cycle: sell, deliver well, collect feedback, reinvest. Capital is something your business can build for itself, one small payment at a time."],
+            fig: { k: "Growth loop", v: "sell, deliver, learn, reinvest" }
+          }
+        ]
+      },
+      {
+        id: "home-business-ideas", design: "biz", no: "02", bg: "#3A1C5C", pop: "#FF8A5B", scene: "solar", title: "10 Small Business Ideas You Can Start from Home", tag: "Business", accent: "#FF8A5B", chapters: [
+          {
+            title: "Service ideas: freelancing and assisting", cap: "Ideas orbiting around your skills",
+            body: ["1. Freelance writing or copywriting for blogs, websites and product pages. 2. Virtual assistance, handling email, scheduling and customer messages for busy owners. 3. Graphic design for logos, posts and presentations. 4. Social media management for local shops and small brands.",
+              "These four need only a computer and an internet connection. They suit people who can communicate clearly and deliver on time."],
+            fig: { k: "Ideas 1 to 4", v: "writing, assisting, design, social media" }
+          },
+          {
+            title: "Knowledge ideas: teaching and advising", cap: "Share what you know with more people",
+            body: ["5. Online tutoring in school subjects, languages or music. 6. Digital products such as templates, planners, printables and short ebooks, made once and sold many times. 7. Coaching or consulting in an area where you have real experience.",
+              "Knowledge businesses scale well because the same lesson or file can reach many buyers. The trade-off is that you must build trust first, usually by sharing useful free content."],
+            fig: { k: "Ideas 5 to 7", v: "tutoring, digital products, coaching" }
+          },
+          {
+            title: "Product ideas: making and reselling", cap: "Products need a little more room to grow",
+            body: ["8. Handmade goods such as candles, soap, crafts or baked items sold through social media or local markets. 9. Reselling or dropshipping, where you list products and a supplier handles stock. 10. Print-on-demand, where designs are printed on shirts or mugs only after an order arrives.",
+              "Product businesses usually need some starting money and more attention to delivery, returns and quality. Start with a small test batch before you commit."],
+            fig: { k: "Ideas 8 to 10", v: "handmade, reselling, print-on-demand" }
+          },
+          {
+            title: "How to choose your idea", cap: "Match the idea to your situation",
+            body: ["Score each idea on four questions: Do I have the skill now? Can I start with very little money? Do people already pay for this? Would I enjoy doing it for a year? The idea with the best total is your starting point.",
+              "Do not wait for a perfect idea. Test one for thirty days, talk to real customers and adjust. A good idea that you actually launch beats a great idea that stays in your notebook."],
+            fig: { k: "Four-question test", v: "skill, cost, demand, enjoyment" }
+          }
+        ]
+      },
+      {
+        id: "profitable-business-guide", design: "biz", no: "03", bg: "#0B2545", pop: "#4ADE80", scene: "moon", title: "The Beginner’s Guide to Building a Profitable Business", tag: "Business", accent: "#4ADE80", chapters: [
+          {
+            title: "Understand profit", cap: "Every business moves through phases",
+            body: ["Revenue is the money coming in. Profit is what stays after you pay your costs. Many beginners celebrate sales and then discover they spent as much as they earned.",
+              "Track every peso or dollar from day one in a simple sheet: what came in, what went out and why. A clear picture of your numbers is the foundation of every good decision."],
+            fig: { k: "Core formula", v: "profit = revenue − costs" }
+          },
+          {
+            title: "Price for profit, not for fear", cap: "Pricing shifts as the business matures",
+            body: ["Many new owners price too low because they are afraid to lose customers. Low prices attract bargain hunters, leave no room for mistakes and make it hard to grow.",
+              "Start by adding up your costs and the time you spend, then add a margin that pays you fairly. Compare with similar businesses, but price on the value you deliver, not only on what others charge."],
+            fig: { k: "Price check", v: "costs + your time + a healthy margin" }
+          },
+          {
+            title: "Build systems and keep costs low", cap: "Steady routines keep the cycle turning",
+            body: ["Write down the steps you repeat: how you take an order, how you deliver, how you follow up. Even a short checklist saves time and helps you keep quality the same each time.",
+              "Review your costs every month. Cancel tools you do not use, negotiate with suppliers and ask whether each expense helps you earn more. Small savings add up faster than most people expect."],
+            fig: { k: "Habit to build", v: "a monthly review of income and costs" }
+          },
+          {
+            title: "Grow with repeat customers", cap: "The cycle comes back around",
+            body: ["Winning a new customer usually costs more than keeping an existing one. Thank your buyers, ask for feedback and offer a reason to return, such as a package, a membership or a loyalty reward.",
+              "Happy customers refer others. Ask for reviews and testimonials after a good result. Over time, repeat work and referrals make your income steadier and your marketing cheaper."],
+            fig: { k: "Steadier income", v: "repeat customers and referrals" }
+          }
+        ]
+      },
+      {
+        id: "first-10-clients", design: "biz", no: "04", bg: "#8A2D0F", pop: "#FFD166", scene: "neural", title: "How to Get Your First 10 Clients Online", tag: "Marketing", accent: "#FFD166", chapters: [
+          {
+            title: "Know who you are looking for", cap: "Every connection starts with one person",
+            body: ["Before you look for clients, describe the exact person who needs you: their job, their problem and where they spend time online. The clearer the picture, the easier it is to find them and to speak to them.",
+              "Then write one sentence that says what you do for them. If a stranger cannot repeat it back, simplify it."],
+            fig: { k: "Your one-liner", v: "I help [who] get [result]" }
+          },
+          {
+            title: "Start with your own network", cap: "Warm contacts connect you to more",
+            body: ["Your first clients often come from people who already know you: friends, former coworkers, classmates and family. Message them directly, say what you now offer and ask if they know someone who could use it.",
+              "Be specific and polite. Instead of asking for a favor, describe a clear way you can help. A personal message gets far more replies than a general post."],
+            fig: { k: "Easiest first sale", v: "someone who already trusts you" }
+          },
+          {
+            title: "Show up where clients already are", cap: "Go where your buyers gather",
+            body: ["Join the groups, communities and platforms your ideal clients use, such as professional networks, forums and social media groups. Answer questions helpfully and share useful tips before you ever mention your service.",
+              "Post short examples of your work and the results you achieved. Consistent, helpful posting makes people remember you when they are ready to hire."],
+            fig: { k: "Golden rule", v: "help first, pitch second" }
+          },
+          {
+            title: "Reach out and follow up", cap: "Each message strengthens the network",
+            body: ["Send a short, personal message to potential clients. Mention something specific about their business, point out one problem you can solve and suggest a simple next step, such as a quick call.",
+              "Most sales happen after a follow-up, not the first message. Send a polite reminder a few days later. When you finish a job, ask for a testimonial and a referral, which are often your fastest route to client number ten."],
+            fig: { k: "Daily habit", v: "a few personal messages every day" }
+          }
+        ]
+      },
+      {
+        id: "freelancer-to-owner", design: "biz", no: "05", bg: "#141414", pop: "#C6F432", scene: "sound", title: "From Freelancer to Business Owner: A Complete Guide", tag: "Business", accent: "#C6F432", chapters: [
+          {
+            title: "Change how you think", cap: "A small signal grows into a bigger one",
+            body: ["A freelancer sells hours. A business owner builds something that can earn without every hour of their own work. The change starts in your mindset: you stop asking “how do I get the next job?” and start asking “how do I build a business that can grow?”",
+              "You are still the main worker for now, but you begin to plan, measure and improve like an owner."],
+            fig: { k: "The shift", v: "from selling hours to building a system" }
+          },
+          {
+            title: "Set up the business properly", cap: "Make your signal clear and official",
+            body: ["Choose a business name, register it according to the rules where you live and open a separate bank or e-wallet account for business money. Keeping personal and business funds apart makes tax time and planning much easier.",
+              "Use written agreements with clients, with clear scope, price, deadlines and payment terms. Check local requirements for permits and taxes, and ask a professional if you are unsure."],
+            fig: { k: "Foundation", v: "name, registration, separate account, contracts" }
+          },
+          {
+            title: "Productize and raise your prices", cap: "Amplify what already works",
+            body: ["Turn your most requested work into a clear package with a fixed scope and price. Packages are easier to sell, easier to deliver and easier to explain than custom quotes.",
+              "As your skill and demand grow, raise your rates. If almost every prospect says yes without hesitation, you are probably charging too little."],
+            fig: { k: "Better than hourly", v: "fixed packages with a fixed outcome" }
+          },
+          {
+            title: "Delegate and scale", cap: "More voices, a wider reach",
+            body: ["You cannot grow if you do every task yourself. Start by handing off small, repeatable jobs such as admin, editing or scheduling to a part-time helper or subcontractor. Give clear instructions and a checklist.",
+              "Use the time you free up for the work only you can do: finding clients, improving the offer and planning. That is how a freelancer becomes the owner of a business that keeps running and growing."],
+            fig: { k: "Owner’s job", v: "find clients, improve the offer, plan ahead" }
+          }
+        ]
       }
     ];
 
@@ -1340,14 +1539,16 @@
     function cover(b) {
       const seen = store.seen[b.id] || [];
       const pct = b.chapters.filter((_, i) => seen[i] === true).length / b.chapters.length * 100;
-      const cv = h("canvas", { "aria-hidden": "true" });
-      const a = h("a", { class: "cover", href: "#" + b.id, style: "--topic:" + b.accent, "aria-label": b.title + ", " + b.chapters.length + " chapters" },
-        cv, h("span", { class: "shade" }),
+      const biz = b.design === "biz";
+      const cv = biz ? null : h("canvas", { "aria-hidden": "true" });
+      const a = h("a", { class: "cover" + (biz ? " biz" : ""), href: "#" + b.id, style: "--topic:" + b.accent + (biz ? ";--bz:" + b.bg + ";--pop:" + b.pop : ""), "aria-label": b.title + ", " + b.chapters.length + " chapters" },
+        biz ? [h("span", { class: "bz-art", "aria-hidden": "true" }), h("span", { class: "bz-num", "aria-hidden": "true" }, b.no)] : [cv, h("span", { class: "shade" })],
         h("span", { class: "meta" },
           h("span", { class: "tag" }, b.tag),
           h("span", { class: "ctitle" }, b.title),
           h("span", { class: "sub" }, b.chapters.length + " chapters · " + mins(b) + " min"),
           h("span", { class: "bar" }, h("i", { style: "width:" + pct + "%" }))));
+      if (biz) return a;
       const st = new Stage(cv, b.scene, 0); let n = 0;
       a.addEventListener("pointerenter", () => { n = (n + 1) % 3; st.go(n); });
       return a;
@@ -1355,14 +1556,17 @@
 
     function library() {
       const books = all();
+      const sci = books.filter(b => b.design !== "biz"), biz = books.filter(b => b.design === "biz");
       view.replaceChildren(
         h("section", { class: "intro" },
           h("div", null,
             h("p", { class: "eyebrow", style: "margin-bottom:14px" }, "Library · " + books.length + " books"),
             h("h1", null, "Pick a topic. Watch it move.")),
-          h("p", { class: "lede" }, "Short illustrated books. Every topic has its own live animation, and it changes as you turn the chapter. Add a book of your own at the end of the shelf.")),
-        h("div", { class: "shelf" }, books.map(cover),
-          h("a", { class: "cover add", href: "#new-book" }, h("span", { class: "add-in" }, h("b", null, "+"), h("span", null, "Write your own"), h("small", null, "Pick an animation, add chapters")))));
+          h("p", { class: "lede" }, "Short illustrated books. Every science topic has its own live animation, and it changes as you turn the chapter. Add a book of your own at the end of the first shelf.")),
+        h("div", { class: "shelf" }, sci.map(cover),
+          h("a", { class: "cover add", href: "#new-book" }, h("span", { class: "add-in" }, h("b", null, "+"), h("span", null, "Write your own"), h("small", null, "Pick an animation, add chapters")))),
+        biz.length ? h("div", { class: "section-head" }, h("h2", null, "Business series"), h("p", null, "Practical guides for starting and growing an online business. You can print or download each one.")) : null,
+        biz.length ? h("div", { class: "shelf" }, biz.map(cover)) : null);
     }
 
     function reader(b) {
@@ -1373,9 +1577,13 @@
       const cap = h("figcaption", { class: "cap" });
       const toc = h("nav", { class: "toc", "aria-label": "Chapters" });
       const page = h("article", { class: "page" });
-      const stage = new Stage(cv, b.scene, idx % 3);
+      const biz = b.design === "biz";
+      const stage = biz ? { go() { } } : new Stage(cv, b.scene, idx % 3);
+      const hero = biz ? h("div", { class: "hero" },
+        h("span", { class: "hero-no", "aria-hidden": "true" }, b.no), h("span", { class: "hero-tag" }, b.tag),
+        h("h1", { class: "hero-title" }, b.title), h("p", { class: "hero-cap" }), h("span", { class: "hero-bar", "aria-hidden": "true" }, h("i"))) : null;
       const sceneName = (SCENE_LIST.find(s => s[0] === b.scene) || [])[1] || "Animation";
-      const root = h("div", { class: "reader", style: "--topic:" + b.accent + ";--fs:" + store.fs });
+      const root = h("div", { class: "reader" + (biz ? " biz" : ""), style: "--topic:" + b.accent + ";--fs:" + store.fs + (biz ? ";--bz:" + b.bg + ";--pop:" + b.pop : "") });
 
       function show(i, dir) {
         if (i < 0 || i >= b.chapters.length) return;
@@ -1384,10 +1592,12 @@
       function build(dir) {
         const ch = b.chapters[idx], seen = store.seen[b.id], n = b.chapters.length, last = idx === n - 1;
         cap.textContent = ch.cap || sceneName;
+        if (biz) { hero.querySelector(".hero-cap").textContent = ch.cap || ""; hero.querySelector(".hero-bar i").style.width = ((idx + 1) / n * 100) + "%"; }
         toc.replaceChildren(...b.chapters.map((c, i) => h("button", { type: "button", "aria-current": i === idx ? "true" : null, onclick: () => show(i, i > idx ? 1 : -1) },
           h("span", { class: "n" }, String(i + 1).padStart(2, "0")), h("span", null, c.title), h("span", { class: "dot" + (seen[i] === true ? " on" : "") }))));
         const sheet = h("div", { class: "sheet", style: "--dx:" + (dir * 22) + "px" },
           h("div", { class: "segs", "aria-hidden": "true" }, b.chapters.map((_, i) => h("span", { class: "seg" + (i === idx ? " cur" : seen[i] === true ? " seen" : "") }))),
+          biz ? h("span", { class: "step", "aria-hidden": "true" }, String(idx + 1).padStart(2, "0")) : null,
           h("p", { class: "eyebrow" }, "Chapter " + (idx + 1) + " of " + n),
           h("h2", null, ch.title),
           ch.body.map(p => h("p", null, p)),
@@ -1415,16 +1625,47 @@
         h("div", { class: "reader-bar" },
           h("a", { class: "btn", href: "#" }, "← Library"),
           h("div", { class: "tools" }, del,
+            h("button", { class: "btn", type: "button", onclick: () => printBook(b) }, "Print / PDF"),
+            h("button", { class: "btn", type: "button", onclick: () => downloadBook(b).html() }, "Download"),
             h("button", { class: "btn", type: "button", "aria-label": "Smaller text", onclick: () => fontStep(-.075) }, "A−"),
             h("button", { class: "btn", type: "button", "aria-label": "Larger text", onclick: () => fontStep(.075) }, "A+"))),
         h("div", { class: "reader-grid" },
           h("aside", { class: "side" },
-            h("figure", { class: "scene", role: "img", "aria-label": sceneName + " animation for " + b.title, style: "margin:0" }, cv),
-            cap, toc),
+            biz ? hero : h("figure", { class: "scene", role: "img", "aria-label": sceneName + " animation for " + b.title, style: "margin:0" }, cv),
+            biz ? null : cap, toc),
           page));
       view.replaceChildren(root);
       build(0);
       active = { next: () => show(idx + 1, 1), prev: () => show(idx - 1, -1) };
+    }
+
+
+    /* ---------- print & download ---------- */
+    const bookText = b => "# " + b.title + "\n" + b.tag + "\n\n" + b.chapters.map((c, i) =>
+      "## " + (i + 1) + ". " + c.title + "\n\n" + c.body.join("\n\n") + (c.fig ? "\n\n" + c.fig.k + ": " + c.fig.v : "")).join("\n\n") + "\n";
+    function printBook(b) {
+      let area = $("#print-area");
+      if (!area) { area = h("div", { id: "print-area" }); document.body.append(area); }
+      area.replaceChildren(
+        h("h1", null, b.title), h("p", { class: "pa-tag" }, b.tag + " · " + b.chapters.length + " chapters"),
+        ...b.chapters.map((c, i) => h("section", null, h("h2", null, (i + 1) + ". " + c.title), c.body.map(p => h("p", null, p)),
+          c.fig ? h("p", { class: "pa-fact" }, h("strong", null, c.fig.k + ": "), c.fig.v) : null)));
+      const clear = () => { area.replaceChildren(); removeEventListener("afterprint", clear); };
+      addEventListener("afterprint", clear);
+      window.print();
+    }
+    function downloadBook(b) {
+      const esc = t => String(t).replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+      const doc = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + esc(b.title) + "</title><style>" +
+        "body{max-width:42rem;margin:0 auto;padding:2rem 1.2rem;font:18px/1.65 Georgia,serif;color:#11161C}h1{font:800 2rem/1.2 Helvetica,Arial,sans-serif}h2{font:700 1.3rem/1.3 Helvetica,Arial,sans-serif;margin-top:2.2rem}" +
+        ".tag{font:.8rem monospace;letter-spacing:.1em;text-transform:uppercase;color:#555}.fact{border-left:4px solid " + esc(b.accent) + ";padding-left:.8rem;color:#333}</style></head><body><h1>" + esc(b.title) + "</h1><p class=\"tag\">" + esc(b.tag) + "</p>" +
+        b.chapters.map((c, i) => "<h2>" + (i + 1) + ". " + esc(c.title) + "</h2>" + c.body.map(p => "<p>" + esc(p) + "</p>").join("") + (c.fig ? "<p class=\"fact\"><strong>" + esc(c.fig.k) + ":</strong> " + esc(c.fig.v) + "</p>" : "")).join("") + "</body></html>";
+      const save = (content, type, ext) => {
+        const url = URL.createObjectURL(new Blob([content], { type }));
+        const a = h("a", { href: url, download: (b.title.replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "ebook") + "." + ext });
+        document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+      return { html: () => save(doc, "text/html", "html"), txt: () => save(bookText(b), "text/plain", "txt") };
     }
 
     function parseBook(text) {
